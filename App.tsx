@@ -20,21 +20,18 @@ import {
 } from 'react-native';
 import {COLOR} from './src/uliti/color';
 import {useForm, Controller} from 'react-hook-form';
-import SelectDropdown, {
-  SelectDropdownProps,
-} from 'react-native-select-dropdown';
+import SelectDropdown from 'react-native-select-dropdown';
 
 const App = () => {
   const {control, handleSubmit} = useForm();
   const [value, setValue] = useState();
   const [genderIndex, setGenderIndex] = useState(0);
   const gender = ['Nam', 'Nữ', 'Khác'];
-  const countries = ['Egypt', 'Canada', 'Australia', 'Ireland'];
+  const countries = ['Designer', 'Tester', 'BA'];
 
   const onSubmit = (d: any) => {
     console.log(d);
   };
-  // console.log(value);
 
   const genderChangeHandler = (index: any) => {
     console.log('index \t', index);
@@ -153,16 +150,35 @@ const App = () => {
             onSelect={(selectedItem, index) => {
               console.log(selectedItem, index);
             }}
+            defaultButtonText={'Thợ code'}
             buttonTextAfterSelection={(selectedItem, index) => {
-              // text represented after item is selected
-              // if data array is an array of objects then return selectedItem.property to render after item is selected
+              console.log(selectedItem);
+
               return selectedItem;
             }}
             rowTextForSelection={(item, index) => {
-              // text represented for each item in dropdown
-              // if data array is an array of objects then return item.property to represent item in dropdown
+              console.log(item);
+
               return item;
             }}
+            buttonStyle={styles.dropdown1BtnStyle}
+            buttonTextStyle={styles.dropdown1BtnTxtStyle}
+            renderDropdownIcon={isOpened => {
+              return (
+                <Image
+                  style={styles.ImageStyleRight}
+                  source={{
+                    uri: isOpened
+                      ? 'https://cdn-icons-png.flaticon.com/128/130/130906.png'
+                      : 'https://cdn-icons-png.flaticon.com/128/32/32195.png',
+                  }}
+                />
+              );
+            }}
+            dropdownIconPosition={'right'}
+            dropdownStyle={styles.dropdown1DropdownStyle}
+            rowStyle={styles.dropdown1RowStyle}
+            rowTextStyle={styles.dropdown1RowTxtStyle}
           />
         </View>
         <View style={styles.SubmitStyle}>
@@ -237,6 +253,34 @@ const styles = StyleSheet.create({
   TextButtonStyle: {
     fontSize: 14,
     color: COLOR.white,
+  },
+  dropdown1BtnStyle: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#FFF',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: COLOR.borderColorInput,
+  },
+  dropdown1BtnTxtStyle: {
+    color: COLOR.textGender,
+    textAlign: 'left',
+    fontSize: 14,
+  },
+  dropdown1DropdownStyle: {
+    backgroundColor: '#EFEFEF',
+  },
+  dropdown1RowStyle: {
+    backgroundColor: '#EFEFEF',
+    borderBottomColor: '#C5C5C5',
+  },
+  dropdown1RowTxtStyle: {
+    color: COLOR.textGender,
+    textAlign: 'left',
+  },
+  ImageStyleRight: {
+    width: 10,
+    height: 10,
   },
 });
 
