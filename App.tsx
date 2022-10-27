@@ -54,8 +54,8 @@ const App = () => {
     phoneNumber: Yup.string().matches(phoneReg, 'Is not format'),
     email: Yup.string().matches(emailReg, 'Is not format'),
     dateOfBirth: Yup.date()
-      .min(new Date('2014-1-1'), '')
-      .max(new Date('2066-1-1'), ''),
+      .min(new Date('2014-1-1'), 'between 13-65 age')
+      .max(new Date('2066-1-1'), 'between 13-65 age'),
   });
 
   const date = new Date('2014-1-1');
