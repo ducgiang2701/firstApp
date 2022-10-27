@@ -4,4 +4,5 @@ export const COLOR = {
   borderColorInput: '#A5ABB3',
   button: '#F4A31E',
   textGender: '#151515',
+  errorStyle: 'red',
 };

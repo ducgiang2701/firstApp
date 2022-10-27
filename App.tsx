@@ -21,23 +21,66 @@ import {
 import {COLOR} from './src/uliti/color';
 import {useForm, Controller} from 'react-hook-form';
 import SelectDropdown from 'react-native-select-dropdown';
-
+import * as Yup from 'yup';
+import DatePicker from 'react-native-date-picker';
+import {yupResolver} from '@hookform/resolvers/yup';
+import moment from 'moment';
 const App = () => {
-  const {control, handleSubmit} = useForm();
-  const [value, setValue] = useState();
-  const [genderIndex, setGenderIndex] = useState(0);
-  const gender = ['Nam', 'Nữ', 'Khác'];
   const countries = ['Designer', 'Tester', 'BA'];
 
-  const onSubmit = (d: any) => {
-    console.log(d);
-  };
+  const [genderIndex, setGenderIndex] = useState(0);
+  const genders = ['Nam', 'Nữ', 'Khác'];
 
   const genderChangeHandler = (index: any) => {
     console.log('index \t', index);
     setGenderIndex(index);
   };
+  const nameRegExp = /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/;
+  const identityCardNumberReg = /[0-9]{9}/;
+  const phoneReg = /^(0\d{9,10})$/;
+  const emailReg =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+  const schema = Yup.object().shape({
+    fullName: Yup.string()
+      .required('This case cannot be left blank')
+      .matches(nameRegExp, 'is not format')
+      .min(12, 'Pleasr enter at least 12 characters')
+      .max(125, 'Can only enter up to 125 characters'),
+    identityCardNumber: Yup.string()
+      .required('This case cannot be left blank')
+      .matches(identityCardNumberReg, 'Can only enter up to 15 characters')
+      .max(15, 'Can only enter up to 15 characters'),
+    phoneNumber: Yup.string().matches(phoneReg, 'Is not format'),
+    email: Yup.string().matches(emailReg, 'Is not format'),
+    dateOfBirth: Yup.date()
+      .min(new Date('2014-1-1'), '')
+      .max(new Date('2066-1-1'), ''),
+  });
+
+  const date = new Date('2014-1-1');
+
+  const {
+    control,
+    handleSubmit,
+    formState: {errors},
+  } = useForm({
+    defaultValues: {
+      fullName: '',
+      dateOfBirth: date,
+      identityCardNumber: '',
+      phoneNumber: '',
+      email: '',
+      gender: '',
+    },
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = (data: any) => {
+    console.log(data);
+  };
+
+  const [open, setOpen] = useState(false);
   return (
     <View style={styles.Container}>
       <SafeAreaView style={styles.SafeAreaViewStyle}>
@@ -46,102 +89,169 @@ const App = () => {
           <Controller
             name="fullName"
             control={control}
-            render={props => (
-              <TextInput
-                {...props}
-                style={styles.Input}
-                value={value}
-                onChangeText={v => setValue(v)}
-              />
-            )}
+            render={({field: {onChange, onBlur, value}}) => {
+              return (
+                <TextInput
+                  style={{
+                    ...styles.Input,
+                  }}
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                />
+              );
+            }}
           />
+          {errors.fullName && (
+            <Text style={styles.errorStyle}>{errors.fullName?.message}</Text>
+          )}
         </View>
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Ngày sinh *'}</Text>
-          <View style={styles.Input}>
-            <TextInput style={styles.TextInputStyle} />
-            <TouchableOpacity>
-              <Image
-                style={styles.iconCalendar}
-                source={{
-                  uri: 'https://cdn-icons-png.flaticon.com/128/2886/2886665.png',
-                }}
-              />
-            </TouchableOpacity>
-          </View>
+          <Controller
+            name="dateOfBirth"
+            control={control}
+            render={({field: {value, onChange}}) => {
+              return (
+                <View>
+                  <TouchableOpacity
+                    style={styles.dateOfBirthStyle}
+                    onPress={() => setOpen(true)}>
+                    <DatePicker
+                      modal
+                      open={open}
+                      mode="date"
+                      date={value}
+                      onConfirm={date => {
+                        setOpen(false);
+                        onChange(date);
+                      }}
+                      onCancel={() => {
+                        setOpen(false);
+                      }}
+                    />
+                    <Text
+                      style={{
+                        ...styles.Input,
+                        borderWidth: 0,
+                        width: '92%',
+                      }}>
+                      {moment(value).format('DD/MM/YYYY')}
+                    </Text>
+
+                    <TouchableOpacity onPress={() => setOpen(true)}>
+                      <Image
+                        style={styles.iconCalendar}
+                        source={{
+                          uri: 'https://cdn-icons-png.flaticon.com/128/2886/2886665.png',
+                        }}
+                      />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                  {errors.dateOfBirth && (
+                    <Text style={styles.errorStyle}>
+                      {errors.dateOfBirth?.message}
+                    </Text>
+                  )}
+                </View>
+              );
+            }}
+          />
         </View>
+
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Giới tính *'}</Text>
-          <View style={styles.GenderStyle}>
-            {gender.map((item, index) => {
+          <Controller
+            name="gender"
+            control={control}
+            render={({field: {onChange, onBlur, value}}) => {
               return (
-                <TouchableOpacity
-                  style={styles.CheckBox}
-                  key={item}
-                  onPress={genderChangeHandler.bind(this, index)}>
-                  <Image
-                    style={{
-                      ...styles.RadioButton,
-                      tintColor:
-                        index === genderIndex ? COLOR.button : COLOR.textGender,
-                    }}
-                    source={{
-                      uri:
-                        index === genderIndex
-                          ? 'https://cdn-icons-png.flaticon.com/128/6948/6948243.png'
-                          : 'https://cdn-icons-png.flaticon.com/128/7824/7824793.png',
-                    }}
-                  />
-                  <Text style={styles.TextGenderStyle}>{item}</Text>
-                </TouchableOpacity>
+                <View style={styles.GenderStyle}>
+                  {genders.map((item, index) => {
+                    return (
+                      <TouchableOpacity
+                        style={styles.CheckBox}
+                        key={item}
+                        onPress={genderChangeHandler.bind(this, index)}>
+                        <Image
+                          style={{
+                            ...styles.RadioButton,
+                            tintColor:
+                              index === genderIndex
+                                ? COLOR.button
+                                : COLOR.textGender,
+                          }}
+                          source={{
+                            uri:
+                              index === genderIndex
+                                ? 'https://cdn-icons-png.flaticon.com/128/6948/6948243.png'
+                                : 'https://cdn-icons-png.flaticon.com/128/7824/7824793.png',
+                          }}
+                        />
+                        <Text style={styles.TextGenderStyle}>{item}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               );
-            })}
-          </View>
+            }}
+          />
         </View>
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Số CMND *'}</Text>
           <Controller
-            name="fullName"
+            name="identityCardNumber"
             control={control}
-            render={props => (
+            render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                {...props}
                 style={styles.Input}
                 value={value}
-                onChangeText={v => setValue(v)}
+                onBlur={onBlur}
+                onChangeText={onChange}
               />
             )}
           />
+          {errors.identityCardNumber && (
+            <Text style={styles.errorStyle}>
+              {errors.identityCardNumber?.message}
+            </Text>
+          )}
         </View>
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Số điện thoại'}</Text>
           <Controller
-            name="fullName"
+            name="phoneNumber"
             control={control}
-            render={props => (
+            render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                {...props}
                 style={styles.Input}
                 value={value}
-                onChangeText={v => setValue(v)}
+                onBlur={onBlur}
+                onChangeText={onChange}
               />
             )}
           />
+          {errors.phoneNumber && (
+            <Text style={styles.errorStyle}>{errors.phoneNumber?.message}</Text>
+          )}
         </View>
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Email *'}</Text>
           <Controller
-            name="fullName"
+            name="email"
             control={control}
-            render={props => (
+            render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                {...props}
                 style={styles.Input}
                 value={value}
-                onChangeText={v => setValue(v)}
+                onBlur={onBlur}
+                onChangeText={onChange}
               />
             )}
           />
+          {errors.email && (
+            <Text style={styles.errorStyle}>{errors.email?.message}</Text>
+          )}
         </View>
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Nghề Nghiệp'}</Text>
@@ -151,12 +261,12 @@ const App = () => {
               console.log(selectedItem, index);
             }}
             defaultButtonText={'Thợ code'}
-            buttonTextAfterSelection={(selectedItem, index) => {
+            buttonTextAfterSelection={selectedItem => {
               console.log(selectedItem);
 
               return selectedItem;
             }}
-            rowTextForSelection={(item, index) => {
+            rowTextForSelection={item => {
               console.log(item);
 
               return item;
@@ -281,6 +391,16 @@ const styles = StyleSheet.create({
   ImageStyleRight: {
     width: 10,
     height: 10,
+  },
+  errorStyle: {
+    color: COLOR.errorStyle,
+  },
+  dateOfBirthStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 4,
+    borderColor: COLOR.borderColorInput,
   },
 });
 
