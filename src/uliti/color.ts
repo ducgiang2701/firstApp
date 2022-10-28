@@ -5,4 +5,5 @@ export const COLOR = {
   button: '#F4A31E',
   textGender: '#151515',
   errorStyle: 'red',
+  disalble: '#DDDDDD',
 };

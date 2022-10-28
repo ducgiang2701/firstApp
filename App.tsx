@@ -43,19 +43,19 @@ const App = () => {
 
   const schema = Yup.object().shape({
     fullName: Yup.string()
-      .required('This case cannot be left blank')
+      .required('')
       .matches(nameRegExp, 'is not format')
       .min(12, 'Pleasr enter at least 12 characters')
       .max(125, 'Can only enter up to 125 characters'),
     identityCardNumber: Yup.string()
-      .required('This case cannot be left blank')
+      .required('')
       .matches(identityCardNumberReg, 'Can only enter up to 15 characters')
       .max(15, 'Can only enter up to 15 characters'),
-    phoneNumber: Yup.string().matches(phoneReg, 'Is not format'),
-    email: Yup.string().matches(emailReg, 'Is not format'),
+    phoneNumber: Yup.string().required('').matches(phoneReg, 'Is not format'),
+    email: Yup.string().required('').matches(emailReg, 'Is not format'),
     dateOfBirth: Yup.date()
-      .min(new Date('2014-1-1'), 'between 13-65 age')
-      .max(new Date('2066-1-1'), 'between 13-65 age'),
+      .min(new Date('2014-1-1'), 'Between 13-65 age')
+      .max(new Date('2066-1-1'), 'Between 13-65 age'),
   });
 
   const date = new Date('2014-1-1');
@@ -94,6 +94,9 @@ const App = () => {
                 <TextInput
                   style={{
                     ...styles.Input,
+                    borderColor: errors.fullName
+                      ? COLOR.errorStyle
+                      : COLOR.borderColorInput,
                   }}
                   value={value}
                   onBlur={onBlur}
@@ -115,7 +118,12 @@ const App = () => {
               return (
                 <View>
                   <TouchableOpacity
-                    style={styles.dateOfBirthStyle}
+                    style={{
+                      ...styles.dateOfBirthStyle,
+                      borderColor: errors.dateOfBirth
+                        ? COLOR.errorStyle
+                        : COLOR.borderColorInput,
+                    }}
                     onPress={() => setOpen(true)}>
                     <DatePicker
                       modal
@@ -158,7 +166,6 @@ const App = () => {
             }}
           />
         </View>
-
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Giới tính *'}</Text>
           <Controller
@@ -204,7 +211,12 @@ const App = () => {
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                style={styles.Input}
+                style={{
+                  ...styles.Input,
+                  borderColor: errors.identityCardNumber
+                    ? COLOR.errorStyle
+                    : COLOR.borderColorInput,
+                }}
                 value={value}
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -224,7 +236,9 @@ const App = () => {
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                style={styles.Input}
+                style={{
+                  ...styles.Input,
+                }}
                 value={value}
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -242,7 +256,12 @@ const App = () => {
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                style={styles.Input}
+                style={{
+                  ...styles.Input,
+                  borderColor: errors.email
+                    ? COLOR.errorStyle
+                    : COLOR.borderColorInput,
+                }}
                 value={value}
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -293,8 +312,25 @@ const App = () => {
         </View>
         <View style={styles.SubmitStyle}>
           <TouchableOpacity
+            disabled={
+              errors.fullName ||
+              errors.dateOfBirth ||
+              errors.identityCardNumber ||
+              errors.email
+                ? true
+                : false
+            }
             onPress={handleSubmit(onSubmit)}
-            style={styles.ButtonStyle}>
+            style={{
+              ...styles.ButtonStyle,
+              backgroundColor:
+                errors.fullName ||
+                errors.dateOfBirth ||
+                errors.identityCardNumber ||
+                errors.email
+                  ? COLOR.disalble
+                  : COLOR.button,
+            }}>
             <Text style={styles.TextButtonStyle}>{'Chọn'}</Text>
           </TouchableOpacity>
         </View>
