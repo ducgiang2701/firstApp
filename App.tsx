@@ -14,96 +14,75 @@ import {
   View,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   Image,
 } from 'react-native';
 import {COLOR} from './src/uliti/color';
 import {useForm, Controller} from 'react-hook-form';
-import SelectDropdown from 'react-native-select-dropdown';
-import * as Yup from 'yup';
 import DatePicker from 'react-native-date-picker';
 import {yupResolver} from '@hookform/resolvers/yup';
 import moment from 'moment';
+import Button from './src/component/Button';
+import Form from './src/component/Form';
+import DropDownPicker from 'react-native-dropdown-picker';
+import {schema} from './src/uliti/validation';
+
 const App = () => {
-  const countries = ['Designer', 'Tester', 'BA'];
-
   const [genderIndex, setGenderIndex] = useState(0);
-  const genders = ['Nam', 'Nữ', 'Khác'];
-
-  const genderChangeHandler = (index: any) => {
-    console.log('index \t', index);
-    setGenderIndex(index);
-  };
-  const nameRegExp = /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/;
-  const identityCardNumberReg = /[0-9]{9}/;
-  const phoneReg = /^(0\d{9,10})$/;
-  const emailReg =
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-  const schema = Yup.object().shape({
-    fullName: Yup.string()
-      .required('')
-      .matches(nameRegExp, 'is not format')
-      .min(12, 'Pleasr enter at least 12 characters')
-      .max(125, 'Can only enter up to 125 characters'),
-    identityCardNumber: Yup.string()
-      .required('')
-      .matches(identityCardNumberReg, 'Can only enter up to 15 characters')
-      .max(15, 'Can only enter up to 15 characters'),
-    phoneNumber: Yup.string().required('').matches(phoneReg, 'Is not format'),
-    email: Yup.string().required('').matches(emailReg, 'Is not format'),
-    dateOfBirth: Yup.date()
-      .min(new Date('2014-1-1'), 'Between 13-65 age')
-      .max(new Date('2066-1-1'), 'Between 13-65 age'),
-  });
+  const [open, setOpen] = useState(false);
+  const [openSelect, setOpenSelect] = useState(false);
 
   const date = new Date('2014-1-1');
+
+  const defaultValues = {
+    fullName: '',
+    dateOfBirth: date || '',
+    identityCardNumber: '',
+    phoneNumber: '',
+    email: '',
+    workSelect: '',
+    gender: '',
+  };
 
   const {
     control,
     handleSubmit,
     formState: {errors},
   } = useForm({
-    defaultValues: {
-      fullName: '',
-      dateOfBirth: date,
-      identityCardNumber: '',
-      phoneNumber: '',
-      email: '',
-      gender: '',
-    },
+    defaultValues,
     resolver: yupResolver(schema),
   });
+
+  const items = [
+    {label: 'Thợ code', value: 'thợ code'},
+    {label: 'Designer', value: 'designer'},
+    {label: 'BA', value: 'ba'},
+    {label: 'Php', value: 'php'},
+  ];
 
   const onSubmit = (data: any) => {
     console.log(data);
   };
 
-  const [open, setOpen] = useState(false);
+  const checkName = errors.fullName ? COLOR.errorStyle : COLOR.borderColorInput;
+  const checkCMND = errors.identityCardNumber
+    ? COLOR.errorStyle
+    : COLOR.borderColorInput;
+  const checkSDT = errors.phoneNumber
+    ? COLOR.errorStyle
+    : COLOR.borderColorInput;
+  const checkEmail = errors.email ? COLOR.errorStyle : COLOR.borderColorInput;
+
   return (
     <View style={styles.Container}>
       <SafeAreaView style={styles.SafeAreaViewStyle}>
         <View style={styles.Form}>
-          <Text style={styles.Label}>{'Họ và tên *'}</Text>
-          <Controller
-            name="fullName"
+          <Form
+            label="Họ và tên *"
             control={control}
-            render={({field: {onChange, onBlur, value}}) => {
-              return (
-                <TextInput
-                  style={{
-                    ...styles.Input,
-                    borderColor: errors.fullName
-                      ? COLOR.errorStyle
-                      : COLOR.borderColorInput,
-                  }}
-                  value={value}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                />
-              );
-            }}
+            errors={errors}
+            name="fullName"
+            check={checkName}
           />
           {errors.fullName && (
             <Text style={styles.errorStyle}>{errors.fullName?.message}</Text>
@@ -130,6 +109,7 @@ const App = () => {
                       open={open}
                       mode="date"
                       date={value}
+                      // eslint-disable-next-line @typescript-eslint/no-shadow
                       onConfirm={date => {
                         setOpen(false);
                         onChange(date);
@@ -139,6 +119,7 @@ const App = () => {
                       }}
                     />
                     <Text
+                      // eslint-disable-next-line react-native/no-inline-styles
                       style={{
                         ...styles.Input,
                         borderWidth: 0,
@@ -171,7 +152,13 @@ const App = () => {
           <Controller
             name="gender"
             control={control}
-            render={({field: {onChange, onBlur, value}}) => {
+            render={({field: {onChange}}) => {
+              const genders = ['Nam', 'Nữ', 'Khác'];
+
+              const genderChangeHandler = (index: any, item: any) => {
+                onChange(item);
+                setGenderIndex(index);
+              };
               return (
                 <View style={styles.GenderStyle}>
                   {genders.map((item, index) => {
@@ -179,7 +166,7 @@ const App = () => {
                       <TouchableOpacity
                         style={styles.CheckBox}
                         key={item}
-                        onPress={genderChangeHandler.bind(this, index)}>
+                        onPress={genderChangeHandler.bind(this, index, item)}>
                         <Image
                           style={{
                             ...styles.RadioButton,
@@ -204,24 +191,14 @@ const App = () => {
             }}
           />
         </View>
+
         <View style={styles.Form}>
-          <Text style={styles.Label}>{'Số CMND *'}</Text>
-          <Controller
-            name="identityCardNumber"
+          <Form
+            label="Số CMND *"
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
-              <TextInput
-                style={{
-                  ...styles.Input,
-                  borderColor: errors.identityCardNumber
-                    ? COLOR.errorStyle
-                    : COLOR.borderColorInput,
-                }}
-                value={value}
-                onBlur={onBlur}
-                onChangeText={onChange}
-              />
-            )}
+            errors={errors}
+            name="identityCardNumber"
+            check={checkCMND}
           />
           {errors.identityCardNumber && (
             <Text style={styles.errorStyle}>
@@ -230,43 +207,24 @@ const App = () => {
           )}
         </View>
         <View style={styles.Form}>
-          <Text style={styles.Label}>{'Số điện thoại'}</Text>
-          <Controller
-            name="phoneNumber"
+          <Form
+            label="Số điện thoại"
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
-              <TextInput
-                style={{
-                  ...styles.Input,
-                }}
-                value={value}
-                onBlur={onBlur}
-                onChangeText={onChange}
-              />
-            )}
+            errors={errors}
+            name="phoneNumber"
+            check={checkSDT}
           />
           {errors.phoneNumber && (
             <Text style={styles.errorStyle}>{errors.phoneNumber?.message}</Text>
           )}
         </View>
         <View style={styles.Form}>
-          <Text style={styles.Label}>{'Email *'}</Text>
-          <Controller
-            name="email"
+          <Form
+            label="Email *"
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
-              <TextInput
-                style={{
-                  ...styles.Input,
-                  borderColor: errors.email
-                    ? COLOR.errorStyle
-                    : COLOR.borderColorInput,
-                }}
-                value={value}
-                onBlur={onBlur}
-                onChangeText={onChange}
-              />
-            )}
+            errors={errors}
+            name="email"
+            check={checkEmail}
           />
           {errors.email && (
             <Text style={styles.errorStyle}>{errors.email?.message}</Text>
@@ -274,65 +232,35 @@ const App = () => {
         </View>
         <View style={styles.Form}>
           <Text style={styles.Label}>{'Nghề Nghiệp'}</Text>
-          <SelectDropdown
-            data={countries}
-            onSelect={(selectedItem, index) => {
-              console.log(selectedItem, index);
-            }}
-            defaultButtonText={'Thợ code'}
-            buttonTextAfterSelection={selectedItem => {
-              console.log(selectedItem);
-
-              return selectedItem;
-            }}
-            rowTextForSelection={item => {
-              console.log(item);
-
-              return item;
-            }}
-            buttonStyle={styles.dropdown1BtnStyle}
-            buttonTextStyle={styles.dropdown1BtnTxtStyle}
-            renderDropdownIcon={isOpened => {
+          <Controller
+            name="workSelect"
+            control={control}
+            render={({field: {onChange, value}}) => {
               return (
-                <Image
-                  style={styles.ImageStyleRight}
-                  source={{
-                    uri: isOpened
-                      ? 'https://cdn-icons-png.flaticon.com/128/130/130906.png'
-                      : 'https://cdn-icons-png.flaticon.com/128/32/32195.png',
+                <DropDownPicker
+                  open={openSelect}
+                  setOpen={setOpenSelect}
+                  value={value}
+                  setValue={onChange}
+                  onChangeValue={item => onChange(item)}
+                  items={items}
+                  style={styles.selectStyle}
+                  // eslint-disable-next-line react-native/no-inline-styles
+                  dropDownContainerStyle={{
+                    borderColor: COLOR.borderColorInput,
+                    zIndex: 100,
                   }}
                 />
               );
             }}
-            dropdownIconPosition={'right'}
-            dropdownStyle={styles.dropdown1DropdownStyle}
-            rowStyle={styles.dropdown1RowStyle}
-            rowTextStyle={styles.dropdown1RowTxtStyle}
           />
         </View>
         <View style={styles.SubmitStyle}>
-          <TouchableOpacity
-            disabled={
-              errors.fullName ||
-              errors.dateOfBirth ||
-              errors.identityCardNumber ||
-              errors.email
-                ? true
-                : false
-            }
-            onPress={handleSubmit(onSubmit)}
-            style={{
-              ...styles.ButtonStyle,
-              backgroundColor:
-                errors.fullName ||
-                errors.dateOfBirth ||
-                errors.identityCardNumber ||
-                errors.email
-                  ? COLOR.disalble
-                  : COLOR.button,
-            }}>
-            <Text style={styles.TextButtonStyle}>{'Chọn'}</Text>
-          </TouchableOpacity>
+          <Button
+            handleSubmit={handleSubmit}
+            onSubmit={onSubmit}
+            errors={errors}
+          />
         </View>
       </SafeAreaView>
     </View>
@@ -363,6 +291,10 @@ const styles = StyleSheet.create({
   TextGenderStyle: {
     color: COLOR.textGender,
   },
+  SubmitStyle: {
+    zIndex: -1,
+    alignItems: 'center',
+  },
 
   SafeAreaViewStyle: {
     flex: 1,
@@ -387,55 +319,21 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
   },
-  SubmitStyle: {
-    alignItems: 'center',
-  },
-  ButtonStyle: {
-    backgroundColor: COLOR.button,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 4,
-  },
-  TextButtonStyle: {
-    fontSize: 14,
-    color: COLOR.white,
-  },
-  dropdown1BtnStyle: {
-    width: '100%',
-    height: 40,
-    backgroundColor: '#FFF',
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: COLOR.borderColorInput,
-  },
-  dropdown1BtnTxtStyle: {
-    color: COLOR.textGender,
-    textAlign: 'left',
-    fontSize: 14,
-  },
-  dropdown1DropdownStyle: {
-    backgroundColor: '#EFEFEF',
-  },
-  dropdown1RowStyle: {
-    backgroundColor: '#EFEFEF',
-    borderBottomColor: '#C5C5C5',
-  },
-  dropdown1RowTxtStyle: {
-    color: COLOR.textGender,
-    textAlign: 'left',
+  errorStyle: {
+    color: COLOR.errorStyle,
   },
   ImageStyleRight: {
     width: 10,
     height: 10,
-  },
-  errorStyle: {
-    color: COLOR.errorStyle,
   },
   dateOfBirthStyle: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 4,
+    borderColor: COLOR.borderColorInput,
+  },
+  selectStyle: {
     borderColor: COLOR.borderColorInput,
   },
 });

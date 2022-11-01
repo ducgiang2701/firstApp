@@ -1,34 +1,36 @@
 import React from 'react';
-import {View, StyleSheet, Text, TextInput} from 'react-native';
+import {Controller} from 'react-hook-form';
+import {Text, TextInput, View, StyleSheet} from 'react-native';
 import {COLOR} from '../uliti/color';
-const Form = ({lable}) => {
+
+const Form = ({control, errors, label, name, check}) => {
   return (
-    <View style={styles.Form}>
-      <View style={styles.LabelBox}>
-        <Text style={styles.LabelText}>{lable}</Text>
-      </View>
-      <View style={styles.InputBox}>
-        <TextInput style={styles.Input} />
-      </View>
+    <View>
+      <Text style={styles.Label}>{label}</Text>
+      <Controller
+        name={name}
+        control={control}
+        render={({field: {onChange, onBlur, value}}) => {
+          return (
+            <TextInput
+              style={{
+                ...styles.Input,
+                borderColor: check,
+              }}
+              value={value}
+              onBlur={onBlur}
+              onChangeText={onChange}
+            />
+          );
+        }}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  Form: {
-    marginBottom: 13,
-  },
-  LabelBox: {
-    marginBottom: 7,
-  },
-  LabelText: {
-    color: COLOR.textLabel,
-    fontSize: 12,
-  },
-  InputBox: {
-    width: '100%',
-  },
   Input: {
+    flexDirection: 'row',
     width: '100%',
     borderWidth: 1,
     paddingVertical: 10,
@@ -36,5 +38,17 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderColor: '#A5ABB3',
   },
+  Label: {
+    color: COLOR.textLabel,
+    fontSize: 12,
+    marginBottom: 7,
+  },
+  TextInputStyle: {
+    width: '92%',
+  },
+  errorStyle: {
+    color: COLOR.errorStyle,
+  },
 });
+
 export default Form;
