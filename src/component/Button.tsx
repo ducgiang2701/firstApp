@@ -1,8 +1,8 @@
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {COLOR} from '../uliti/color';
+import {StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {COLOR} from '../utils/color';
 
-const Button = ({handleSubmit, onSubmit, errors}) => {
+const Button = ({handleSubmit, onSubmit, errors}: any) => {
   return (
     <TouchableOpacity
       disabled={

@@ -1,9 +1,9 @@
 import React from 'react';
 import {Controller} from 'react-hook-form';
 import {Text, TextInput, View, StyleSheet} from 'react-native';
-import {COLOR} from '../uliti/color';
+import {COLOR} from '../utils/color';
 
-const Form = ({control, errors, label, name, check}) => {
+const Form = ({control, label, name, check}: any) => {
   return (
     <View>
       <Text style={styles.Label}>{label}</Text>
